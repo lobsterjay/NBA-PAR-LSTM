@@ -1,0 +1,53 @@
+import requests
+from bs4 import BeautifulSoup
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM
+from tensorflow.keras.losses import Huber
+
+def fetch_data(url, player_name):
+    # ...
+
+def prepare_data(sequence, n_steps):
+    X, y = [], []
+    for i in range(len(sequence)-n_steps):
+        X.append(sequence[i:i+n_steps])
+        y.append(sequence[i+n_steps])
+    X = np.array(X)
+    y = np.array(y)
+    return X.reshape((X.shape[0], X.shape[1], 1)), y
+
+def train_and_predict_next_number(X, y):
+    model = Sequential()
+    model.add(LSTM(50, activation='relu', input_shape=(X.shape[1], 1)))
+    model.add(Dense(1))
+    model.compile(optimizer='adam', loss=Huber(delta=1.0))
+    model.fit(X, y, epochs=100, verbose=0)
+
+    x_input = np.array(y[-3:]).reshape((1, X.shape[1], 1))
+    next_number_prediction = model.predict(x_input, verbose=0)[0][0]
+    return max(0, next_number_prediction)
+
+url = 'URL_OF_THE_WEBPAGE_TO_SCRAPE'
+player_name = 'PLAYER_NAME'
+fetched_data = fetch_data(url, player_name)
+
+n_steps = 3
+sequence_sets = {
+    'CustomName1': [
+        {'data': [16, 33, 22, fetched_data['points']], 'label': 'points'},
+        {'data': [3, 2, 2, fetched_data['assists']], 'label': 'assists'},
+        {'data': [5, 5, 4, fetched_data['rebounds']], 'label': 'rebounds'},
+        {'data': [1, 4, 4, fetched_data['3P Made']], 'label': '3P Made'}
+    ],
+    # Add more sets of input sequences with custom unique names as needed
+}
+
+print("The predicted next numbers in the sequence sets are:")
+for set_key, sequences in sequence_sets.items():
+    print(f"\n{set_key}:")
+    for seq in sequences:
+        X, y = prepare_data(seq['data'], n_steps)
+        next_number_prediction = train_and_predict_next_number(X, y)
+        print(f"  {seq['label'].capitalize()}: {next_number_prediction:.2f}")

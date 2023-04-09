@@ -7,7 +7,30 @@ from tensorflow.keras.layers import Dense, LSTM
 from tensorflow.keras.losses import Huber
 
 def fetch_data(url, player_name):
-    # ...
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    player_row = None
+    for row in soup.select('CSS_SELECTOR_FOR_TABLE_ROWS'):
+        name_cell = row.select_one('CSS_SELECTOR_FOR_PLAYER_NAME')
+        if name_cell and player_name.lower() in name_cell.text.lower():
+            player_row = row
+            break
+
+    if not player_row:
+        raise ValueError(f"Player '{player_name}' not found")
+
+    points = int(player_row.select_one('CSS_SELECTOR_FOR_POINTS').text)
+    assists = int(player_row.select_one('CSS_SELECTOR_FOR_ASSISTS').text)
+    rebounds = int(player_row.select_one('CSS_SELECTOR_FOR_REBOUNDS').text)
+    three_point_made = int(player_row.select_one('CSS_SELECTOR_FOR_3P_MADE').text)
+
+    return {
+        'points': points,
+        'assists': assists,
+        'rebounds': rebounds,
+        '3P Made': three_point_made
+    }
 
 def prepare_data(sequence, n_steps):
     X, y = [], []

@@ -1,9 +1,6 @@
 # NBA-PAR-LSTM
 This GPT-4 assisted project predicts the next game performance of an NBA player using a simple LSTM model. 
 
-
-NBA PAR Prediction using LSTM 
-
 Description:
 
 This project uses a simple LSTM model to predict the next number in a series of NBA player performance statistics, such as points, assists, rebounds, and three-pointers made. The program fetches the required data for a specific player by scraping a webpage and then trains the LSTM model on the data to make predictions.
